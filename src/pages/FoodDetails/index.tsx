@@ -86,6 +86,15 @@ const FoodDetails: React.FC = () => {
             const { quantity, ...restExtra } = item;
             return { quantity: 0, ...restExtra };
           });
+          try {
+            const respFavorite = await api.get(`/favorites/${id}`);
+
+            if (respFavorite) {
+              setIsFavorite(true);
+            }
+          } catch (error) {
+            // Food not found as favorite
+          }
           setFood(formFoods);
           setExtras(formExtras);
         }
@@ -134,7 +143,19 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(() => {
-    setIsFavorite(!isFavorite);
+    async function fav(): Promise<void> {
+      let response;
+      if (!isFavorite) {
+        response = await api.post('/favorites', food);
+      } else {
+        response = await api.delete(`/favorites/${food.id}`);
+      }
+      if (response) {
+        setIsFavorite(!isFavorite);
+      }
+    }
+
+    fav();
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
